@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/Rust-2021-000000?logo=rust&logoColor=white" alt="Rust" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React 19" />
   <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT" />
+  <img src="https://img.shields.io/badge/License-PolyForm--Noncommercial--1.0.0-orange.svg" alt="License: PolyForm Noncommercial 1.0.0" />
 </p>
 
 ---
@@ -120,6 +120,7 @@ PeekMD/
 │   └── tauri.conf.json     # Tauri app, window, bundle & file association settings
 ├── index.html              # HTML shell
 ├── package.json            # Node.js scripts & frontend dependencies
+├── LICENSE                 # PolyForm Noncommercial License 1.0.0
 ├── tsconfig.json           # TypeScript configuration
 └── vite.config.ts          # Vite build configuration
 ```
@@ -189,4 +190,8 @@ npm run build
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE).
+
+> Required Notice: Emirhan Akdeniz, github.com/emirhanakdeniz
+
+In short, this license permits any **noncommercial** use of PeekMD — including personal use, hobby projects, and use by charitable, educational, research, public safety/health, environmental, and governmental organizations — as well as changes and redistribution of the software for noncommercial purposes, provided that the license terms and the Required Notice above are passed along. Commercial use is not permitted under these terms; contact the licensor if you need a commercial license.

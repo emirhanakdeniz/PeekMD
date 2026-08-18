@@ -3,6 +3,7 @@ name = "peekmd"
 version = "1.0.0"
 description = "Lightweight Markdown viewer"
 authors = ["you"]
+license = "PolyForm-Noncommercial-1.0.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
