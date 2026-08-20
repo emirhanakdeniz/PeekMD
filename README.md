@@ -33,11 +33,11 @@ Instead of waiting for heavy IDEs, text editors, or bloated note-taking apps to 
 - 📝 **GitHub Flavored Markdown (GFM)**: Full specification support for tables, task lists with interactive styling, blockquotes, strikethrough, autolinks, headings, and images.
 - 🎨 **Code Syntax Highlighting**: Integrated **PrismJS** engine with syntax highlighting across Rust, TypeScript, JavaScript, Python, Bash, Go, C/C++, C#, SQL, YAML, JSON, and Markdown.
 - 🔒 **Sanitized & Secure**: All rendered HTML is strictly sanitized through **DOMPurify** to prevent script injection (XSS). External hyperlinks open safely in your default web browser via native opener plugins.
-- 🪟 **Native Windows Integration**: Automatically registers file associations for `.md` and `.markdown` files in Windows Registry (`HKCU`), updates window titles dynamically, and supports CLI argument launching (`peekmd <path>`).
-- 🌓 **Themes & Typography**: Built-in **System**, **Light**, and **Dark** themes adhering to GitHub's visual palette, accompanied by themed custom scrollbars.
+- 🪟 **Native Windows Integration**: Installer-managed `.md` and `.markdown` file associations, dynamic window titles, and CLI argument launching (`peekmd <path>`).
+- 🌓 **Themes & Typography**: A focused Windows-native document lens with persistent **System**, **Light**, and **Dark** themes.
 - 🔍 **Zoom & View Controls**: Fluid typography zoom scaling (<kbd>Ctrl</kbd> + <kbd>+</kbd>, <kbd>Ctrl</kbd> + <kbd>-</kbd>, <kbd>Ctrl</kbd> + <kbd>0</kbd>, or <kbd>Ctrl</kbd> + <kbd>Mouse Wheel</kbd>).
 - 📂 **Drag & Drop**: Drop any `.md` or `.markdown` file directly onto the window with visual drop-zone feedback.
-- 💾 **State Persistence**: Remembers window position, dimensions, and theme preference across sessions using `tauri-plugin-window-state`.
+- 💾 **State Persistence**: Remembers window position, dimensions, theme, and zoom across sessions.
 - 📋 **Native Context Menu**: Clean right-click menu tailored for copying selected text or full code blocks without browser context clutter.
 
 ---
@@ -65,23 +65,19 @@ Instead of waiting for heavy IDEs, text editors, or bloated note-taking apps to 
 flowchart TD
     subgraph Frontend["Frontend (React 19 + TypeScript + Vite)"]
         UI["App.tsx / MarkdownView.tsx"]
-        Parser["Marked (GFM)"]
-        Highlight["PrismJS Highlighting"]
+        Worker["Markdown + Prism Web Worker"]
         Sanitize["DOMPurify XSS Filter"]
         
-        UI --> Parser
-        Parser --> Highlight
-        Highlight --> Sanitize
+        UI --> Worker
+        Worker --> Sanitize
     end
 
     subgraph Backend["Backend (Tauri v2 + Rust)"]
         Core["Tauri Core & Window Management"]
         Commands["File I/O Commands (commands.rs)"]
-        Assoc["Windows Registry Associations (windows_assoc.rs)"]
         Plugins["tauri-plugin-opener & window-state"]
         
         Core --> Commands
-        Core --> Assoc
         Core --> Plugins
     end
 
@@ -113,7 +109,6 @@ PeekMD/
 ├── src-tauri/              # Rust desktop backend
 │   ├── src/
 │   │   ├── commands.rs     # File reading, initial argument parsing, dialog commands
-│   │   ├── windows_assoc.rs# Windows Shell & Registry association setup
 │   │   ├── lib.rs          # Tauri application builder & plugin configuration
 │   │   └── main.rs         # Tauri binary entry point
 │   ├── Cargo.toml          # Rust dependencies & configuration

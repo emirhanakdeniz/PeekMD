@@ -1,21 +1,20 @@
 mod commands;
-mod windows_assoc;
-
-use commands::{get_initial_file, open_file, pick_and_open_file, reload_file};
+use commands::{
+    get_initial_document, open_document, open_relative_document, pick_document, resolve_local_asset,
+};
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    windows_assoc::register_windows_associations();
-
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
-            get_initial_file,
-            open_file,
-            reload_file,
-            pick_and_open_file
+            get_initial_document,
+            pick_document,
+            open_document,
+            open_relative_document,
+            resolve_local_asset
         ])
         .on_window_event(|window, event| {
             if let tauri::WindowEvent::CloseRequested { .. } = event {

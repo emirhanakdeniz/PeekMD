@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from "react";
 export interface ContextMenuPosition {
   x: number;
   y: number;
+  returnFocus?: HTMLElement;
 }
 
 interface ContextMenuProps {
@@ -25,6 +26,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   useEffect(() => {
     if (!position) return;
 
+    const enabledItems = () => Array.from(menuRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? []);
+    requestAnimationFrame(() => enabledItems()[0]?.focus());
+
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         onClose();
@@ -34,6 +38,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onClose();
+        position.returnFocus?.focus();
+      } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const items = enabledItems();
+        const index = Math.max(0, items.indexOf(document.activeElement as HTMLButtonElement));
+        items[(index + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length]?.focus();
+      } else if (e.key === "Home" || e.key === "End") {
+        e.preventDefault(); const items = enabledItems(); items[e.key === "Home" ? 0 : items.length - 1]?.focus();
       }
     };
 
@@ -59,8 +71,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   // Clamp within viewport
   const menuWidth = 180;
   const menuHeight = 85;
-  const x = Math.min(position.x, window.innerWidth - menuWidth - 8);
-  const y = Math.min(position.y, window.innerHeight - menuHeight - 8);
+  const x = Math.max(8, Math.min(position.x, window.innerWidth - menuWidth - 8));
+  const y = Math.max(8, Math.min(position.y, window.innerHeight - menuHeight - 8));
 
   return (
     <div
@@ -68,11 +80,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
       className="custom-context-menu"
       style={{ left: `${x}px`, top: `${y}px` }}
       onContextMenu={(e) => e.preventDefault()}
+      role="menu"
+      aria-label="Document actions"
     >
       <button
         type="button"
         className={`context-menu-item ${!hasSelection ? "disabled" : ""}`}
         disabled={!hasSelection}
+        role="menuitem"
         onClick={() => {
           onCopy();
           onClose();
@@ -82,11 +97,12 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         <span className="context-menu-shortcut">Ctrl+C</span>
       </button>
 
-      <div className="context-menu-separator" />
+      <div className="context-menu-separator" role="separator" />
 
       <button
         type="button"
         className="context-menu-item"
+        role="menuitem"
         onClick={() => {
           onOpenFile();
           onClose();

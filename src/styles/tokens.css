@@ -1,0 +1,20 @@
+:root, [data-theme="light"] {
+  color-scheme: light; --zoom-level: 1; --canvas: #f7f9fc; --surface: #fff; --ink: #18202a; --muted: #667085;
+  --rule: #dce3ec; --rule-strong: #c6d0de; --action: #2f6fed; --action-hover: #255bc5; --code: #edf2f7;
+  --selection: #cfe0ff; --danger: #b42318; --shadow: 0 10px 35px rgba(27, 39, 57, .10);
+  --radius-sm: 6px; --radius-md: 10px; --focus: 0 0 0 3px rgba(47, 111, 237, .28);
+  --hl-comment:#687386; --hl-punctuation:#344054; --hl-number:#175cd3; --hl-string:#067647; --hl-keyword:#b42318; --hl-function:#6938ef; --hl-variable:#b54708; --hl-operator:#c11574;
+}
+[data-theme="dark"] {
+  color-scheme: dark; --canvas:#10141a; --surface:#171c24; --ink:#e7ebf2; --muted:#98a2b3; --rule:#2a3240; --rule-strong:#3b4657;
+  --action:#78a9ff; --action-hover:#a6c8ff; --code:#11161d; --selection:#234b82; --danger:#f97066; --shadow:0 12px 38px rgba(0,0,0,.35);
+  --hl-comment:#98a2b3; --hl-punctuation:#d0d5dd; --hl-number:#84adff; --hl-string:#75e0a7; --hl-keyword:#fda29b; --hl-function:#bdb4fe; --hl-variable:#fec84b; --hl-operator:#f9a8d4;
+}
+@media (prefers-color-scheme: dark) { [data-theme="system"] { color-scheme:dark; --canvas:#10141a; --surface:#171c24; --ink:#e7ebf2; --muted:#98a2b3; --rule:#2a3240; --rule-strong:#3b4657; --action:#78a9ff; --action-hover:#a6c8ff; --code:#11161d; --selection:#234b82; --danger:#f97066; --shadow:0 12px 38px rgba(0,0,0,.35); --hl-comment:#98a2b3; --hl-punctuation:#d0d5dd; --hl-number:#84adff; --hl-string:#75e0a7; --hl-keyword:#fda29b; --hl-function:#bdb4fe; --hl-variable:#fec84b; --hl-operator:#f9a8d4; } }
+*, *::before, *::after { box-sizing:border-box; }
+html, body, #root { width:100%; min-height:100%; margin:0; }
+html { background:var(--canvas); color:var(--ink); font-family:"Segoe UI Variable Text","Segoe UI",sans-serif; font-size:16px; scrollbar-color:var(--rule-strong) transparent; }
+body { overflow-x:hidden; } button { font:inherit; } ::selection { background:var(--selection); }
+:focus-visible { outline:none; box-shadow:var(--focus); }
+@media (forced-colors: active) { :focus-visible { outline:2px solid Highlight; } .markdown-mark { forced-color-adjust:none; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior:auto!important; transition-duration:.01ms!important; animation-duration:.01ms!important; } }
