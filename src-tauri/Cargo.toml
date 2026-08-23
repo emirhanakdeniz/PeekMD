@@ -1,6 +1,6 @@
 [package]
 name = "peekmd"
-version = "1.0.0"
+version = "1.1.0"
 description = "Lightweight Markdown viewer"
 authors = ["Emirhan Akdeniz"]
 repository = "https://github.com/emirhanakdeniz/PeekMD"

@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::{
     fs,
     io::Read,
@@ -7,6 +7,22 @@ use std::{
 use tauri::{AppHandle, Manager, Window};
 
 pub const MAX_DOCUMENT_BYTES: u64 = 5 * 1024 * 1024;
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ViewerPreferences {
+    pub theme: String,
+    pub zoom: f64,
+}
+
+impl Default for ViewerPreferences {
+    fn default() -> Self {
+        Self {
+            theme: "system".to_string(),
+            zoom: 1.0,
+        }
+    }
+}
 
 #[derive(Serialize, Clone, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -217,6 +233,95 @@ pub async fn resolve_local_asset(
     Ok(normalized_path(&asset))
 }
 
+pub fn get_app_dir(app: &AppHandle) -> Result<PathBuf, DocumentError> {
+    let base_dir = app
+        .path()
+        .config_dir()
+        .map_err(|e| DocumentError::new("path_error", format!("Could not resolve config directory: {e}")))?;
+    let app_dir = base_dir.join("PeekMD");
+    if !app_dir.exists() {
+        fs::create_dir_all(&app_dir).map_err(|e| {
+            DocumentError::new("io_error", format!("Could not create application directory: {e}"))
+        })?;
+    }
+    Ok(app_dir)
+}
+
+fn sanitize_preferences(preferences: ViewerPreferences) -> ViewerPreferences {
+    let clamped_zoom = (preferences.zoom * 100.0).round() / 100.0;
+    let valid_zoom = clamped_zoom.clamp(0.6, 2.4);
+    let valid_theme = match preferences.theme.as_str() {
+        "light" | "dark" | "system" => preferences.theme,
+        _ => "system".to_string(),
+    };
+    ViewerPreferences {
+        theme: valid_theme,
+        zoom: valid_zoom,
+    }
+}
+
+pub fn read_preferences_file(path: &Path) -> ViewerPreferences {
+    if !path.is_file() {
+        return ViewerPreferences::default();
+    }
+    let Ok(content) = fs::read_to_string(path) else {
+        return ViewerPreferences::default();
+    };
+    let Ok(prefs) = serde_json::from_str::<ViewerPreferences>(&content) else {
+        return ViewerPreferences::default();
+    };
+    sanitize_preferences(prefs)
+}
+
+pub fn write_preferences_file(
+    path: &Path,
+    preferences: ViewerPreferences,
+) -> Result<(), DocumentError> {
+    if let Some(parent) = path.parent() {
+        if !parent.exists() {
+            fs::create_dir_all(parent).map_err(|e| {
+                DocumentError::new("io_error", format!("Could not create directory: {e}"))
+            })?;
+        }
+    }
+    let sanitized = sanitize_preferences(preferences);
+    let json = serde_json::to_string_pretty(&sanitized).map_err(|e| {
+        DocumentError::new(
+            "serialization_failed",
+            format!("Could not serialize preferences: {e}"),
+        )
+    })?;
+    fs::write(path, json).map_err(|e| {
+        DocumentError::new("write_failed", format!("Could not write preferences: {e}"))
+    })?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn load_preferences(app: AppHandle) -> Result<ViewerPreferences, DocumentError> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let app_dir = get_app_dir(&app)?;
+        let pref_path = app_dir.join("preferences.json");
+        Ok(read_preferences_file(&pref_path))
+    })
+    .await
+    .map_err(|e| DocumentError::new("task_failed", format!("Preferences task failed: {e}")))?
+}
+
+#[tauri::command]
+pub async fn save_preferences(
+    app: AppHandle,
+    preferences: ViewerPreferences,
+) -> Result<(), DocumentError> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let app_dir = get_app_dir(&app)?;
+        let pref_path = app_dir.join("preferences.json");
+        write_preferences_file(&pref_path, preferences)
+    })
+    .await
+    .map_err(|e| DocumentError::new("task_failed", format!("Save preferences task failed: {e}")))?
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -288,6 +393,37 @@ mod tests {
             split_href("../guide/readme.md#setup"),
             ("../guide/readme.md", Some("setup"))
         );
+        fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn reads_and_writes_preferences_with_sanitization() {
+        let dir = isolated_dir();
+        let path = dir.join("preferences.json");
+
+        // When file does not exist, default preferences returned
+        let initial = read_preferences_file(&path);
+        assert_eq!(initial, ViewerPreferences::default());
+
+        // Write custom preferences
+        let custom = ViewerPreferences {
+            theme: "dark".to_string(),
+            zoom: 1.3,
+        };
+        write_preferences_file(&path, custom.clone()).unwrap();
+        let loaded = read_preferences_file(&path);
+        assert_eq!(loaded, custom);
+
+        // Sanitize invalid zoom and invalid theme
+        let invalid = ViewerPreferences {
+            theme: "invalid_theme".to_string(),
+            zoom: 50.0,
+        };
+        write_preferences_file(&path, invalid).unwrap();
+        let sanitized = read_preferences_file(&path);
+        assert_eq!(sanitized.theme, "system");
+        assert_eq!(sanitized.zoom, 2.4);
+
         fs::remove_dir_all(dir).unwrap();
     }
 }

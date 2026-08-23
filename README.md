@@ -9,12 +9,13 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows&logoColor=white" alt="Platform: Windows" />
-  <img src="https://img.shields.io/badge/Tauri-v2-FFC131?logo=tauri&logoColor=white" alt="Tauri v2" />
-  <img src="https://img.shields.io/badge/Rust-2021-000000?logo=rust&logoColor=white" alt="Rust" />
-  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React 19" />
-  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/License-PolyForm--Noncommercial--1.0.0-orange.svg" alt="License: PolyForm Noncommercial 1.0.0" />
+  <img src="https://img.shields.io/badge/Version-v1.1.0-blue?style=flat-square" alt="Version: v1.1.0" />
+  <img src="https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows&logoColor=white&style=flat-square" alt="Platform: Windows" />
+  <img src="https://img.shields.io/badge/Tauri-v2-FFC131?logo=tauri&logoColor=white&style=flat-square" alt="Tauri v2" />
+  <img src="https://img.shields.io/badge/Rust-2021-000000?logo=rust&logoColor=white&style=flat-square" alt="Rust" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black&style=flat-square" alt="React 19" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white&style=flat-square" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/License-PolyForm--Noncommercial--1.0.0-orange.svg?style=flat-square" alt="License: PolyForm Noncommercial 1.0.0" />
 </p>
 
 ---
@@ -37,8 +38,31 @@ Instead of waiting for heavy IDEs, text editors, or bloated note-taking apps to 
 - 🌓 **Themes & Typography**: A focused Windows-native document lens with persistent **System**, **Light**, and **Dark** themes.
 - 🔍 **Zoom & View Controls**: Fluid typography zoom scaling (<kbd>Ctrl</kbd> + <kbd>+</kbd>, <kbd>Ctrl</kbd> + <kbd>-</kbd>, <kbd>Ctrl</kbd> + <kbd>0</kbd>, or <kbd>Ctrl</kbd> + <kbd>Mouse Wheel</kbd>).
 - 📂 **Drag & Drop**: Drop any `.md` or `.markdown` file directly onto the window with visual drop-zone feedback.
-- 💾 **State Persistence**: Remembers window position, dimensions, theme, and zoom across sessions.
+- 💾 **Transparent State Persistence**: Settings and window geometry are saved directly to `%APPDATA%\PeekMD\` as JSON files.
 - 📋 **Native Context Menu**: Clean right-click menu tailored for copying selected text or full code blocks without browser context clutter.
+
+---
+
+## Data Storage & State Persistence
+
+PeekMD keeps all user preferences and window state transparently organized under a dedicated application folder on Windows:
+
+```text
+%APPDATA%\PeekMD\
+├── preferences.json   # Theme ('system', 'light', 'dark') & Zoom level (0.6 - 2.4)
+└── window-state.json  # Last window dimensions, position (x, y), and maximized state
+```
+
+### Example `preferences.json`
+```json
+{
+  "theme": "dark",
+  "zoom": 1.2
+}
+```
+
+- **Read-Only Document Handling**: PeekMD never mutates or caches the contents of opened Markdown documents on disk. Files are loaded strictly in-memory during active sessions.
+- **Zero Cloud Sync / Zero Telemetry**: All data remains 100% offline and local to your system.
 
 ---
 
@@ -65,20 +89,25 @@ Instead of waiting for heavy IDEs, text editors, or bloated note-taking apps to 
 flowchart TD
     subgraph Frontend["Frontend (React 19 + TypeScript + Vite)"]
         UI["App.tsx / MarkdownView.tsx"]
+        Pref["Preferences Hook (preferences.ts)"]
         Worker["Markdown + Prism Web Worker"]
         Sanitize["DOMPurify XSS Filter"]
         
+        UI --> Pref
         UI --> Worker
         Worker --> Sanitize
     end
 
     subgraph Backend["Backend (Tauri v2 + Rust)"]
         Core["Tauri Core & Window Management"]
-        Commands["File I/O Commands (commands.rs)"]
+        Commands["File I/O & Preferences Commands (commands.rs)"]
         Plugins["tauri-plugin-opener & window-state"]
+        Storage["%APPDATA%\\PeekMD (preferences.json, window-state.json)"]
         
         Core --> Commands
         Core --> Plugins
+        Commands --> Storage
+        Plugins --> Storage
     end
 
     Frontend <==>|"Tauri IPC (invoke / events)"| Backend
@@ -87,7 +116,7 @@ flowchart TD
 - **Frontend**: [React 19](https://react.dev/), [TypeScript](https://www.typescriptlang.org/), [Vite](https://vite.dev/)
 - **Markdown & Security**: [Marked](https://marked.js.org/), [PrismJS](https://prismjs.com/), [DOMPurify](https://github.com/cure53/DOMPurify)
 - **Backend Desktop Runtime**: [Tauri v2](https://v2.tauri.app/), [Rust](https://www.rust-lang.org/)
-- **Native OS Plugins & Crates**: `tauri-plugin-opener`, `tauri-plugin-window-state`, `rfd` (file dialogs), `winreg`, `windows-sys`
+- **Native OS Plugins & Storage**: `tauri-plugin-opener`, `tauri-plugin-window-state`, `rfd` (file dialogs), `%APPDATA%\PeekMD` persistent JSON storage
 
 ---
 
@@ -99,22 +128,27 @@ PeekMD/
 ├── src/                    # Frontend React application
 │   ├── components/         # React UI components
 │   │   ├── ContextMenu.tsx # Minimal right-click context menu
+│   │   ├── DocumentStrip.tsx# Top control bar (title, zoom, theme, file actions)
 │   │   └── MarkdownView.tsx# Document container, empty/error states, link handler
 │   ├── lib/
-│   │   └── markdown.ts     # Markdown parser, Prism highlighter & DOMPurify pipeline
+│   │   ├── documentController.ts # Document lifecycle & IPC coordination
+│   │   ├── preferences.ts  # Theme & zoom persistence (backend + fallback)
+│   │   └── sanitize.ts     # DOMPurify HTML sanitization pipeline
 │   ├── styles/
 │   │   └── app.css         # GitHub-inspired light & dark theme styling & typography
+│   ├── workers/
+│   │   └── markdown.worker.ts # Web worker for parsing Markdown & syntax highlighting
 │   ├── App.tsx             # Main view, keyboard shortcuts, zoom & drag-and-drop
 │   └── main.tsx            # React application entry point
 ├── src-tauri/              # Rust desktop backend
 │   ├── src/
-│   │   ├── commands.rs     # File reading, initial argument parsing, dialog commands
+│   │   ├── commands.rs     # File reading, preferences I/O, dialog commands
 │   │   ├── lib.rs          # Tauri application builder & plugin configuration
 │   │   └── main.rs         # Tauri binary entry point
-│   ├── Cargo.toml          # Rust dependencies & configuration
+│   ├── Cargo.toml          # Rust dependencies & configuration (v1.1.0)
 │   └── tauri.conf.json     # Tauri app, window, bundle & file association settings
 ├── index.html              # HTML shell
-├── package.json            # Node.js scripts & frontend dependencies
+├── package.json            # Node.js scripts & frontend dependencies (v1.1.0)
 ├── LICENSE                 # PolyForm Noncommercial License 1.0.0
 ├── tsconfig.json           # TypeScript configuration
 └── vite.config.ts          # Vite build configuration
@@ -168,7 +202,7 @@ src-tauri/target/release/bundle/
 ## Testing & Quality
 
 ### Rust Backend Tests
-Run the unit test suite verifying file reading, normalization, and path handling:
+Run the unit test suite verifying file reading, preferences management, normalization, and path handling:
 
 ```bash
 cargo test --manifest-path src-tauri/Cargo.toml
