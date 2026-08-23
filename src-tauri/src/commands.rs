@@ -91,15 +91,18 @@ pub fn read_document(path: &Path) -> Result<OpenedDocument, DocumentError> {
     let content = String::from_utf8(bytes).map_err(|_| {
         DocumentError::new("invalid_utf8", "This document is not valid UTF-8 text.")
     })?;
-    let canonical = path.canonicalize().map_err(|error| {
-        DocumentError::new(
-            "read_failed",
-            format!("The document path could not be resolved: {error}"),
-        )
-    })?;
+    let resolved_path = path.canonicalize().unwrap_or_else(|_| {
+        if path.is_absolute() {
+            path.to_path_buf()
+        } else {
+            std::env::current_dir()
+                .map(|cwd| cwd.join(path))
+                .unwrap_or_else(|_| path.to_path_buf())
+        }
+    });
     Ok(OpenedDocument {
-        path: normalized_path(&canonical),
-        filename: canonical
+        path: normalized_path(&resolved_path),
+        filename: resolved_path
             .file_name()
             .and_then(|name| name.to_str())
             .unwrap_or("Untitled.md")
@@ -195,12 +198,8 @@ pub async fn resolve_local_asset(
     let parent = base.parent().ok_or_else(|| {
         DocumentError::new("invalid_link", "The current document has no parent folder.")
     })?;
-    let asset = parent.join(relative).canonicalize().map_err(|_| {
-        DocumentError::new(
-            "not_found",
-            "A local image referenced by this document was not found.",
-        )
-    })?;
+    let raw_asset = parent.join(relative);
+    let asset = raw_asset.canonicalize().unwrap_or(raw_asset);
     if !asset.is_file() {
         return Err(DocumentError::new(
             "not_found",
