@@ -234,14 +234,19 @@ pub async fn resolve_local_asset(
 }
 
 pub fn get_app_dir(app: &AppHandle) -> Result<PathBuf, DocumentError> {
-    let base_dir = app
-        .path()
-        .config_dir()
-        .map_err(|e| DocumentError::new("path_error", format!("Could not resolve config directory: {e}")))?;
+    let base_dir = app.path().config_dir().map_err(|e| {
+        DocumentError::new(
+            "path_error",
+            format!("Could not resolve config directory: {e}"),
+        )
+    })?;
     let app_dir = base_dir.join("PeekMD");
     if !app_dir.exists() {
         fs::create_dir_all(&app_dir).map_err(|e| {
-            DocumentError::new("io_error", format!("Could not create application directory: {e}"))
+            DocumentError::new(
+                "io_error",
+                format!("Could not create application directory: {e}"),
+            )
         })?;
     }
     Ok(app_dir)

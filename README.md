@@ -34,7 +34,7 @@ Instead of waiting for heavy IDEs, text editors, or bloated note-taking apps to 
 - 📝 **GitHub Flavored Markdown (GFM)**: Full specification support for tables, task lists with interactive styling, blockquotes, strikethrough, autolinks, headings, and images.
 - 🎨 **Code Syntax Highlighting**: Integrated **PrismJS** engine with syntax highlighting across Rust, TypeScript, JavaScript, Python, Bash, Go, C/C++, C#, SQL, YAML, JSON, and Markdown.
 - 🔒 **Sanitized & Secure**: All rendered HTML is strictly sanitized through **DOMPurify** to prevent script injection (XSS). External hyperlinks open safely in your default web browser via native opener plugins.
-- 🪟 **Native Windows Integration**: Installer-managed `.md` and `.markdown` file associations, dynamic window titles, and CLI argument launching (`peekmd <path>`).
+- 🪟 **Native Windows Integration**: Custom `.md` and `.markdown` document icons in Windows Explorer, installer-managed file associations, dynamic window titles, and CLI argument launching (`peekmd <path>`).
 - 🌓 **Themes & Typography**: A focused Windows-native document lens with persistent **System**, **Light**, and **Dark** themes.
 - 🔍 **Zoom & View Controls**: Fluid typography zoom scaling (<kbd>Ctrl</kbd> + <kbd>+</kbd>, <kbd>Ctrl</kbd> + <kbd>-</kbd>, <kbd>Ctrl</kbd> + <kbd>0</kbd>, or <kbd>Ctrl</kbd> + <kbd>Mouse Wheel</kbd>).
 - 📂 **Drag & Drop**: Drop any `.md` or `.markdown` file directly onto the window with visual drop-zone feedback.
