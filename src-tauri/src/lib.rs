@@ -4,6 +4,7 @@ use commands::{
     resolve_local_asset, save_preferences,
 };
 use tauri::Manager;
+use tauri_plugin_window_state::{StateFlags, WindowExt};
 
 #[cfg(target_os = "windows")]
 fn ensure_windows_file_icon_associations(app_handle: &tauri::AppHandle) {
@@ -137,6 +138,11 @@ pub fn run() {
         .setup(|app| {
             #[cfg(target_os = "windows")]
             ensure_windows_file_icon_associations(app.handle());
+
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.restore_state(StateFlags::all());
+                let _ = window.show();
+            }
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
