@@ -128,7 +128,7 @@ fn ensure_windows_file_icon_associations(app_handle: &tauri::AppHandle) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let app = tauri::Builder::default()
+    tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(
             tauri_plugin_window_state::Builder::default()
@@ -154,17 +154,6 @@ pub fn run() {
             load_preferences,
             save_preferences
         ])
-        .on_window_event(|window, event| {
-            if let tauri::WindowEvent::CloseRequested { .. } = event {
-                window.app_handle().exit(0);
-            }
-        })
-        .build(tauri::generate_context!())
-        .expect("error while building tauri application");
-
-    app.run(|app_handle, event| {
-        if let tauri::RunEvent::ExitRequested { .. } = event {
-            app_handle.exit(0);
-        }
-    });
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
 }
