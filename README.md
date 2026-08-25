@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-v1.1.0-blue?style=flat-square" alt="Version: v1.1.0" />
+  <img src="https://img.shields.io/badge/Version-v1.1.1-blue?style=flat-square" alt="Version: v1.1.1" />
   <img src="https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows&logoColor=white&style=flat-square" alt="Platform: Windows" />
   <img src="https://img.shields.io/badge/Tauri-v2-FFC131?logo=tauri&logoColor=white&style=flat-square" alt="Tauri v2" />
   <img src="https://img.shields.io/badge/Rust-2021-000000?logo=rust&logoColor=white&style=flat-square" alt="Rust" />
@@ -145,10 +145,10 @@ PeekMD/
 │   │   ├── commands.rs     # File reading, preferences I/O, dialog commands
 │   │   ├── lib.rs          # Tauri application builder & plugin configuration
 │   │   └── main.rs         # Tauri binary entry point
-│   ├── Cargo.toml          # Rust dependencies & configuration (v1.1.0)
+│   ├── Cargo.toml          # Rust dependencies & configuration (v1.1.1)
 │   └── tauri.conf.json     # Tauri app, window, bundle & file association settings
 ├── index.html              # HTML shell
-├── package.json            # Node.js scripts & frontend dependencies (v1.1.0)
+├── package.json            # Node.js scripts & frontend dependencies (v1.1.1)
 ├── LICENSE                 # PolyForm Noncommercial License 1.0.0
 ├── tsconfig.json           # TypeScript configuration
 └── vite.config.ts          # Vite build configuration

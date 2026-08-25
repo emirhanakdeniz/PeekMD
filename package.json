@@ -1,7 +1,7 @@
 {
   "name": "peekmd",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Lightweight Markdown viewer",
   "author": "Emirhan Akdeniz",
   "repository": "https://github.com/emirhanakdeniz/PeekMD",
